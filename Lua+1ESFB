@@ -74,7 +74,7 @@ local versionLabel = Instance.new("TextLabel")
 versionLabel.Size = UDim2.new(0.3, 0, 1, 0)
 versionLabel.Position = UDim2.new(0.65, 0, 0, 0)
 versionLabel.BackgroundTransparency = 1
-versionLabel.Text = "v1.0"
+versionLabel.Text = "v1.6"  -- updated here
 versionLabel.TextColor3 = Color3.fromRGB(140, 140, 160)
 versionLabel.TextSize = 12
 versionLabel.Font = Enum.Font.SourceSans
@@ -153,6 +153,7 @@ selectedLabel.TextSize = 15
 selectedLabel.Font = Enum.Font.SourceSansSemibold
 selectedLabel.TextXAlignment = Enum.TextXAlignment.Left
 selectedLabel.Parent = scrollFrame
+
 local modelToggles = {}
 local targetModels = {["1x1x1x1"] = true,["Amalgamation"] = true,["DragonCannelloni"] = true,["DragonniChocolate"] = true,["Guest666"] = true,["LoversMeowy"] = true}
 
@@ -196,6 +197,63 @@ for name, defaultEnabled in pairs(targetModels) do
     updateVisual()
 
     modelToggles[name] = btn
+    yOffset = yOffset + 42
+end
+
+local mutationLabel = Instance.new("TextLabel")
+mutationLabel.Size = UDim2.new(0.88, 0, 0, 28)
+mutationLabel.Position = UDim2.new(0.06, 0, 0, yOffset)
+mutationLabel.BackgroundTransparency = 1
+mutationLabel.Text = "Selected Mutation"
+mutationLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+mutationLabel.TextSize = 15
+mutationLabel.Font = Enum.Font.SourceSansSemibold
+mutationLabel.TextXAlignment = Enum.TextXAlignment.Left
+mutationLabel.Parent = scrollFrame
+
+yOffset = yOffset + 35
+local mutationToggles = {}
+local targetMutations = {["Rainbow"] = true, ["Diamond"] = true, ["Gold"] = true, ["Hacker"] = true, ["None"] = true}
+
+for name, defaultEnabled in pairs(targetMutations) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.88, 0, 0, 34)
+    btn.Position = UDim2.new(0.06, 0, 0, yOffset)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+    btn.BorderSizePixel = 0
+    btn.Text = name .. ": ON"
+    btn.TextColor3 = Color3.fromRGB(220, 220, 230)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansSemibold
+    btn.Parent = scrollFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    local enabled = defaultEnabled
+
+    local function updateVisual()
+        if enabled then
+            btn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+            btn.BackgroundTransparency = 0.25
+            btn.Text = name .. ": ON"
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+            btn.BackgroundTransparency = 0
+            btn.Text = name .. ": OFF"
+        end
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        targetMutations[name] = enabled
+        updateVisual()
+    end)
+
+    updateVisual()
+
+    mutationToggles[name] = btn
     yOffset = yOffset + 42
 end
 
@@ -295,6 +353,13 @@ local childAddedConn
 local tracked = {}
 local busy = false
 
+local mutationMap = {
+    ["RainbowGradient"] = "Rainbow",
+    ["DiamondGradient"] = "Diamond",
+    ["GoldenGradient"] = "Gold",
+    ["HackerGradient"] = "Hacker",
+}
+
 local function makePromptInstant(prompt)
     if prompt:IsA("ProximityPrompt") then
         prompt.HoldDuration = 0
@@ -359,6 +424,17 @@ end
 local function handleModel(model)
     if tracked[model] then return end
     if not isAreaClear(model) then return end
+    
+    local mutation = "None"
+    for gradName, mutName in pairs(mutationMap) do
+        if model:FindFirstChild(gradName, true) then
+            mutation = mutName
+            break
+        end
+    end
+    
+    if not targetMutations[mutation] then return end
+    
     tracked[model] = true
     task.spawn(runSequence, model)
     model.AncestryChanged:Connect(function(_, p) if not p then tracked[model] = nil end end)
