@@ -1,0 +1,502 @@
+local Players        = game:GetService("Players")
+local StarterGui     = game:GetService("StarterGui")
+local TweenService   = game:GetService("TweenService")
+local RunService     = game:GetService("RunService")
+local VirtualInputManager = game:GetService("VirtualInputManager")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+if playerGui:FindFirstChild("EtherionUI") then
+    StarterGui:SetCore("SendNotification", {Title = "Etherion", Text = "Etherion already loaded!", Duration = 5, Icon = "rbxassetid://88238113232908"})
+    return
+end
+
+local gui = Instance.new("ScreenGui")
+gui.Name = "EtherionUI"
+gui.ResetOnSpawn = false
+gui.Parent = playerGui
+
+local ORIGINAL_WIDTH = 191
+local NEW_WIDTH = math.round(ORIGINAL_WIDTH * 1.08)
+
+local mainFrame = Instance.new("Frame")
+mainFrame.Size = UDim2.new(0, NEW_WIDTH, 0, 274)
+mainFrame.Position = UDim2.new(0.5, -NEW_WIDTH/2, 0.12, 0)
+mainFrame.BackgroundColor3 = Color3.fromRGB(18, 18, 18)
+mainFrame.BorderSizePixel = 0
+mainFrame.Parent = gui
+
+local uiCorner = Instance.new("UICorner")
+uiCorner.CornerRadius = UDim.new(0, 6)
+uiCorner.Parent = mainFrame
+
+local uiStroke = Instance.new("UIStroke")
+uiStroke.Thickness = 2
+uiStroke.Transparency = 0.3
+uiStroke.Parent = mainFrame
+
+local gradient = Instance.new("UIGradient")
+gradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(180, 20, 20)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(90, 90, 90)), ColorSequenceKeypoint.new(1, Color3.fromRGB(50, 50, 50))})
+gradient.Rotation = 45
+gradient.Parent = uiStroke
+
+local titleBar = Instance.new("Frame")
+titleBar.Size = UDim2.new(1, 0, 0, 28)
+titleBar.BackgroundColor3 = Color3.fromRGB(28, 28, 32)
+titleBar.BorderSizePixel = 0
+titleBar.Parent = mainFrame
+
+local titleCorner = Instance.new("UICorner")
+titleCorner.CornerRadius = UDim.new(0, 6)
+titleCorner.Parent = titleBar
+
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.new(0, 22, 0, 22)
+logo.Position = UDim2.new(0, 8, 0, 3)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://88238113232908"
+logo.ImageColor3 = Color3.fromRGB(255, 255, 255)
+logo.Parent = titleBar
+
+local titleLabel = Instance.new("TextLabel")
+titleLabel.Size = UDim2.new(0.6, 0, 1, 0)
+titleLabel.Position = UDim2.new(0, 36, 0, 0)
+titleLabel.BackgroundTransparency = 1
+titleLabel.Text = "Etherion | +1SEFB"
+titleLabel.TextColor3 = Color3.fromRGB(200, 200, 220)
+titleLabel.TextSize = 15
+titleLabel.Font = Enum.Font.SourceSansSemibold
+titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+titleLabel.Parent = titleBar
+
+local versionLabel = Instance.new("TextLabel")
+versionLabel.Size = UDim2.new(0.3, 0, 1, 0)
+versionLabel.Position = UDim2.new(0.65, 0, 0, 0)
+versionLabel.BackgroundTransparency = 1
+versionLabel.Text = "v1.0"
+versionLabel.TextColor3 = Color3.fromRGB(140, 140, 160)
+versionLabel.TextSize = 12
+versionLabel.Font = Enum.Font.SourceSans
+versionLabel.TextXAlignment = Enum.TextXAlignment.Left
+versionLabel.Parent = titleBar
+
+local toggleCollapse = Instance.new("TextButton")
+toggleCollapse.Size = UDim2.new(0, 24, 0, 24)
+toggleCollapse.Position = UDim2.new(1, -54, 0, 2)
+toggleCollapse.BackgroundTransparency = 1
+toggleCollapse.Text = "–"
+toggleCollapse.TextColor3 = Color3.fromRGB(170, 170, 190)
+toggleCollapse.TextSize = 20
+toggleCollapse.Font = Enum.Font.SourceSansBold
+toggleCollapse.Parent = titleBar
+
+local closeButton = Instance.new("TextButton")
+closeButton.Size = UDim2.new(0, 24, 0, 24)
+closeButton.Position = UDim2.new(1, -28, 0, 2)
+closeButton.BackgroundTransparency = 1
+closeButton.Text = "X"
+closeButton.TextColor3 = Color3.fromRGB(220, 80, 80)
+closeButton.TextSize = 18
+closeButton.Font = Enum.Font.SourceSansBold
+closeButton.Parent = titleBar
+
+local scrollFrame = Instance.new("ScrollingFrame")
+scrollFrame.Size = UDim2.new(1, 0, 1, -36)
+scrollFrame.Position = UDim2.new(0, 0, 0, 36)
+scrollFrame.BackgroundTransparency = 1
+scrollFrame.ScrollBarThickness = 4
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, 0)
+scrollFrame.Parent = mainFrame
+
+local autoFarmButton = Instance.new("TextButton")
+autoFarmButton.Size = UDim2.new(0.88, 0, 0, 36)
+autoFarmButton.Position = UDim2.new(0.06, 0, 0, 10)
+autoFarmButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+autoFarmButton.BorderSizePixel = 0
+autoFarmButton.Text = "Auto Farm: OFF"
+autoFarmButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+autoFarmButton.TextSize = 14
+autoFarmButton.Font = Enum.Font.SourceSansSemibold
+autoFarmButton.Parent = scrollFrame
+
+local afCorner = Instance.new("UICorner")
+afCorner.CornerRadius = UDim.new(0, 6)
+afCorner.Parent = autoFarmButton
+
+local autoFarmEnabled = false
+
+local statusBarButton = Instance.new("TextButton")
+statusBarButton.Size = UDim2.new(0.88, 0, 0, 36)
+statusBarButton.Position = UDim2.new(0.06, 0, 0, 56)
+statusBarButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+statusBarButton.BorderSizePixel = 0
+statusBarButton.Text = "Status Bar: OFF"
+statusBarButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+statusBarButton.TextSize = 14
+statusBarButton.Font = Enum.Font.SourceSansSemibold
+statusBarButton.Parent = scrollFrame
+
+local sbCorner = Instance.new("UICorner")
+sbCorner.CornerRadius = UDim.new(0, 6)
+sbCorner.Parent = statusBarButton
+
+local statusBarEnabled = false
+
+local selectedLabel = Instance.new("TextLabel")
+selectedLabel.Size = UDim2.new(0.88, 0, 0, 28)
+selectedLabel.Position = UDim2.new(0.06, 0, 0, 102)
+selectedLabel.BackgroundTransparency = 1
+selectedLabel.Text = "Selected Brainrots:"
+selectedLabel.TextColor3 = Color3.fromRGB(180, 180, 180)
+selectedLabel.TextSize = 15
+selectedLabel.Font = Enum.Font.SourceSansSemibold
+selectedLabel.TextXAlignment = Enum.TextXAlignment.Left
+selectedLabel.Parent = scrollFrame
+local modelToggles = {}
+local targetModels = {["1x1x1x1"] = true,["Amalgamation"] = true,["DragonCannelloni"] = true,["DragonniChocolate"] = true,["Guest666"] = true,["LoversMeowy"] = true}
+
+local yOffset = 137
+for name, defaultEnabled in pairs(targetModels) do
+    local btn = Instance.new("TextButton")
+    btn.Size = UDim2.new(0.88, 0, 0, 34)
+    btn.Position = UDim2.new(0.06, 0, 0, yOffset)
+    btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+    btn.BorderSizePixel = 0
+    btn.Text = name .. ": ON"
+    btn.TextColor3 = Color3.fromRGB(220, 220, 230)
+    btn.TextSize = 13
+    btn.Font = Enum.Font.SourceSansSemibold
+    btn.Parent = scrollFrame
+
+    local corner = Instance.new("UICorner")
+    corner.CornerRadius = UDim.new(0, 6)
+    corner.Parent = btn
+
+    local enabled = defaultEnabled
+
+    local function updateVisual()
+        if enabled then
+            btn.BackgroundColor3 = Color3.fromRGB(0, 180, 80)
+            btn.BackgroundTransparency = 0.25
+            btn.Text = name .. ": ON"
+        else
+            btn.BackgroundColor3 = Color3.fromRGB(45, 45, 50)
+            btn.BackgroundTransparency = 0
+            btn.Text = name .. ": OFF"
+        end
+    end
+
+    btn.MouseButton1Click:Connect(function()
+        enabled = not enabled
+        targetModels[name] = enabled
+        updateVisual()
+    end)
+
+    updateVisual()
+
+    modelToggles[name] = btn
+    yOffset = yOffset + 42
+end
+
+scrollFrame.CanvasSize = UDim2.new(0, 0, 0, yOffset + 30)
+
+local statusUI = Instance.new("Frame")
+statusUI.Name = "StatusUI"
+statusUI.Size = UDim2.new(0, 220, 0, 110)
+statusUI.Position = UDim2.new(0.5, -110, 0, 2)
+statusUI.BackgroundColor3 = Color3.fromRGB(12, 12, 15)
+statusUI.BackgroundTransparency = 0.35
+statusUI.BorderSizePixel = 0
+statusUI.Visible = false
+statusUI.Parent = gui
+
+local statusCorner = Instance.new("UICorner")
+statusCorner.CornerRadius = UDim.new(0, 8)
+statusCorner.Parent = statusUI
+
+local statusStroke = Instance.new("UIStroke")
+statusStroke.Thickness = 1.5
+statusStroke.Transparency = 0.4
+statusStroke.Color = Color3.fromRGB(80, 80, 255)
+statusStroke.Parent = statusUI
+
+local statusPadding = Instance.new("UIPadding")
+statusPadding.PaddingTop = UDim.new(0, 8)
+statusPadding.PaddingLeft = UDim.new(0, 12)
+statusPadding.PaddingRight = UDim.new(0, 12)
+statusPadding.Parent = statusUI
+
+local fpsLabel = Instance.new("TextLabel")
+fpsLabel.Size = UDim2.new(1, 0, 0, 18)
+fpsLabel.BackgroundTransparency = 1
+fpsLabel.Text = "FPS: 60"
+fpsLabel.TextColor3 = Color3.fromRGB(180, 255, 180)
+fpsLabel.TextSize = 13
+fpsLabel.Font = Enum.Font.Code
+fpsLabel.TextXAlignment = Enum.TextXAlignment.Left
+fpsLabel.Parent = statusUI
+
+local farmStatusLabel = Instance.new("TextLabel")
+farmStatusLabel.Size = UDim2.new(1, 0, 0, 18)
+farmStatusLabel.Position = UDim2.new(0, 0, 0, 20)
+farmStatusLabel.BackgroundTransparency = 1
+farmStatusLabel.Text = "Auto Farm Status: OFF"
+farmStatusLabel.TextColor3 = Color3.fromRGB(220, 220, 160)
+farmStatusLabel.TextSize = 13
+farmStatusLabel.Font = Enum.Font.Code
+farmStatusLabel.TextXAlignment = Enum.TextXAlignment.Left
+farmStatusLabel.Parent = statusUI
+
+local statuesLabel = Instance.new("TextLabel")
+statuesLabel.Size = UDim2.new(1, 0, 0, 18)
+statuesLabel.Position = UDim2.new(0, 0, 0, 40)
+statuesLabel.BackgroundTransparency = 1
+statuesLabel.Text = "Status: Waiting"
+statuesLabel.TextColor3 = Color3.fromRGB(160, 160, 255)
+statuesLabel.TextSize = 13
+statuesLabel.Font = Enum.Font.Code
+statuesLabel.TextXAlignment = Enum.TextXAlignment.Left
+statuesLabel.Parent = statusUI
+
+local farmedCountLabel = Instance.new("TextLabel")
+farmedCountLabel.Size = UDim2.new(1, 0, 0, 18)
+farmedCountLabel.Position = UDim2.new(0, 0, 0, 60)
+farmedCountLabel.BackgroundTransparency = 1
+farmedCountLabel.Text = "Auto Farmed: 0"
+farmedCountLabel.TextColor3 = Color3.fromRGB(100, 255, 220)
+farmedCountLabel.TextSize = 13
+farmedCountLabel.Font = Enum.Font.Code
+farmedCountLabel.TextXAlignment = Enum.TextXAlignment.Left
+farmedCountLabel.Parent = statusUI
+
+local farmedCount = 0
+local currentStatus = "Waiting"
+
+local function updateStatusUI()
+    if not statusBarEnabled then statusUI.Visible = false return end
+    statusUI.Visible = true
+    local fps = math.floor(1 / RunService.RenderStepped:Wait() + 0.5)
+    fpsLabel.Text = "FPS: " .. fps
+    farmStatusLabel.Text = "Auto Farm Status: " .. (autoFarmEnabled and "ON" or "OFF")
+    statuesLabel.Text = "Status: " .. currentStatus
+    statuesLabel.TextColor3 = currentStatus == "Waiting" and Color3.fromRGB(160, 160, 255) or currentStatus == "Working" and Color3.fromRGB(255, 200, 80) or currentStatus == "Successful" and Color3.fromRGB(80, 255, 140) or Color3.fromRGB(200, 200, 200)
+    farmedCountLabel.Text = "Auto Farmed: " .. farmedCount
+end
+
+task.spawn(function()
+    while true do updateStatusUI() task.wait(0.4) end
+end)
+
+local FINAL_POS = Vector3.new(-1129.8, 61.6, 3230.2)
+local GET_POS   = Vector3.new(-981.1, 61.6, -1201.7)
+
+local childAddedConn
+local tracked = {}
+local busy = false
+
+local function makePromptInstant(prompt)
+    if prompt:IsA("ProximityPrompt") then
+        prompt.HoldDuration = 0
+        prompt.RequiresLineOfSight = false
+        prompt.MaxActivationDistance = 50
+    end
+end
+
+for _, obj in pairs(workspace:GetDescendants()) do makePromptInstant(obj) end
+workspace.DescendantAdded:Connect(makePromptInstant)
+
+local function holdE(duration)
+    VirtualInputManager:SendKeyEvent(true, Enum.KeyCode.E, false, game)
+    task.wait(duration)
+    VirtualInputManager:SendKeyEvent(false, Enum.KeyCode.E, false, game)
+end
+
+local function freezeCharacter()
+    local char = player.Character if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.WalkSpeed = 0 humanoid.JumpPower = 0 end
+    local root = char:FindFirstChild("HumanoidRootPart") if root then root.Anchored = true end
+end
+
+local function unfreezeCharacter()
+    local char = player.Character if not char then return end
+    local humanoid = char:FindFirstChildOfClass("Humanoid")
+    if humanoid then humanoid.WalkSpeed = 16 humanoid.JumpPower = 50 end
+    local root = char:FindFirstChild("HumanoidRootPart") if root then root.Anchored = false end
+end
+
+local function isAreaClear(model)
+    local rootPart = model:FindFirstChildWhichIsA("BasePart") or model.PrimaryPart
+    if not rootPart then return true end
+    local myChar = player.Character
+    if not myChar or not myChar:FindFirstChild("HumanoidRootPart") then return true end
+    local modelPos = rootPart.Position
+    for _, plr in pairs(Players:GetPlayers()) do
+        if plr == player then continue end
+        local char = plr.Character
+        if char and char:FindFirstChild("HumanoidRootPart") then
+            if (char.HumanoidRootPart.Position - modelPos).Magnitude <= 8 then return false end
+        end
+    end
+    return true
+end
+
+local function runSequence(model)
+    if busy then return end busy = true currentStatus = "Working"
+    local character = player.Character or player.CharacterAdded:Wait()
+    local root = character:WaitForChild("HumanoidRootPart")
+    local modelPos = model:GetPivot().Position
+    unfreezeCharacter()
+    root.CFrame = CFrame.new(modelPos) task.wait(2)
+    holdE(3)
+    root.CFrame = CFrame.new(GET_POS) task.wait(3)
+    root.CFrame = CFrame.new(FINAL_POS)
+    if autoFarmEnabled then task.wait(0.3) freezeCharacter() farmedCount += 1 currentStatus = "Successful" task.wait(1.2) currentStatus = "Waiting" end
+    busy = false
+end
+
+local function handleModel(model)
+    if tracked[model] then return end
+    if not isAreaClear(model) then return end
+    tracked[model] = true
+    task.spawn(runSequence, model)
+    model.AncestryChanged:Connect(function(_, p) if not p then tracked[model] = nil end end)
+end
+
+autoFarmButton.MouseButton1Click:Connect(function()
+    autoFarmEnabled = not autoFarmEnabled
+    if autoFarmEnabled then
+        autoFarmButton.BackgroundColor3 = Color3.fromRGB(0, 140, 255)
+        autoFarmButton.BackgroundTransparency = 0.15
+        autoFarmButton.Text = "Auto Farm: ON"
+        autoFarmButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+        local char = player.Character if char then local r = char:FindFirstChild("HumanoidRootPart") if r then r.CFrame = CFrame.new(FINAL_POS) task.wait(0.1) freezeCharacter() end end
+        local clientEntities = workspace:WaitForChild("Caches"):WaitForChild("ClientEntities")
+        if not childAddedConn then
+            childAddedConn = clientEntities.ChildAdded:Connect(function(child)
+                if child:IsA("Model") and targetModels[child.Name] then handleModel(child) end
+            end)
+        end
+    else
+        autoFarmButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        autoFarmButton.BackgroundTransparency = 0
+        autoFarmButton.Text = "Auto Farm: OFF"
+        autoFarmButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+        unfreezeCharacter()
+        if childAddedConn then childAddedConn:Disconnect() childAddedConn = nil end
+    end
+end)
+
+statusBarButton.MouseButton1Click:Connect(function()
+    statusBarEnabled = not statusBarEnabled
+    if statusBarEnabled then
+        statusBarButton.BackgroundColor3 = Color3.fromRGB(0, 200, 120)
+        statusBarButton.BackgroundTransparency = 0.2
+        statusBarButton.Text = "Status Bar: ON"
+        statusBarButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+    else
+        statusBarButton.BackgroundColor3 = Color3.fromRGB(35, 35, 40)
+        statusBarButton.BackgroundTransparency = 0
+        statusBarButton.Text = "Status Bar: OFF"
+        statusBarButton.TextColor3 = Color3.fromRGB(200, 200, 220)
+    end
+    statusUI.Visible = statusBarEnabled
+end)
+
+local draggingStatus, dragStartStatus, startPosStatus
+statusUI.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingStatus = true dragStartStatus = input.Position startPosStatus = statusUI.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then draggingStatus = false end end)
+    end
+end)
+
+statusUI.InputChanged:Connect(function(input)
+    if draggingStatus and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStartStatus
+        statusUI.Position = UDim2.new(startPosStatus.X.Scale, startPosStatus.X.Offset + delta.X, startPosStatus.Y.Scale, startPosStatus.Y.Offset + delta.Y)
+    end
+end)
+
+local toggleButton = Instance.new("ImageButton")
+toggleButton.Name = "ToggleButton"
+toggleButton.Size = UDim2.new(0, 40, 0, 40)
+toggleButton.Position = UDim2.new(0, 20, 0.5, -20)
+toggleButton.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+toggleButton.BackgroundTransparency = 0
+toggleButton.Image = "rbxassetid://88238113232908"
+toggleButton.ImageTransparency = 0.1
+toggleButton.ImageColor3 = Color3.fromRGB(255, 255, 255)
+toggleButton.Parent = gui
+
+local floatCorner = Instance.new("UICorner")
+floatCorner.CornerRadius = UDim.new(0, 8)
+floatCorner.Parent = toggleButton
+
+local floatStroke = Instance.new("UIStroke")
+floatStroke.Thickness = 2
+floatStroke.Transparency = 0
+floatStroke.Parent = toggleButton
+
+local strokeGradient = Instance.new("UIGradient")
+strokeGradient.Color = ColorSequence.new({ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 0, 0)), ColorSequenceKeypoint.new(0.5, Color3.fromRGB(0, 0, 0)), ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 0, 0))})
+strokeGradient.Rotation = 0
+strokeGradient.Parent = floatStroke
+
+local tweenInfoLoop = TweenInfo.new(4, Enum.EasingStyle.Linear, Enum.EasingDirection.InOut, -1)
+TweenService:Create(strokeGradient, tweenInfoLoop, {Rotation = 360}):Play()
+
+local dragging, dragStart, startPos
+toggleButton.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        dragging = true dragStart = input.Position startPos = toggleButton.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then dragging = false end end)
+    end
+end)
+
+toggleButton.InputChanged:Connect(function(input)
+    if dragging and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStart
+        toggleButton.Position = UDim2.new(startPos.X.Scale, startPos.X.Offset + delta.X, startPos.Y.Scale, startPos.Y.Offset + delta.Y)
+    end
+end)
+
+toggleButton.MouseButton1Click:Connect(function() mainFrame.Visible = not mainFrame.Visible end)
+
+local draggingMain, dragStartMain, startPosMain
+titleBar.InputBegan:Connect(function(input)
+    if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
+        draggingMain = true dragStartMain = input.Position startPosMain = mainFrame.Position
+        input.Changed:Connect(function() if input.UserInputState == Enum.UserInputState.End then draggingMain = false end end)
+    end
+end)
+
+titleBar.InputChanged:Connect(function(input)
+    if draggingMain and (input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch) then
+        local delta = input.Position - dragStartMain
+        mainFrame.Position = UDim2.new(startPosMain.X.Scale, startPosMain.X.Offset + delta.X, startPosMain.Y.Scale, startPosMain.Y.Offset + delta.Y)
+    end
+end)
+
+local expanded = true
+local tweenInfo = TweenInfo.new(0.3, Enum.EasingStyle.Quad, Enum.EasingDirection.Out)
+
+toggleCollapse.MouseButton1Click:Connect(function()
+    expanded = not expanded
+    local targetSize = expanded and UDim2.new(0, NEW_WIDTH, 0, 274) or UDim2.new(0, NEW_WIDTH, 0, 28)
+    local targetText = expanded and "–" or "+"
+    TweenService:Create(mainFrame, tweenInfo, {Size = targetSize}):Play()
+    toggleCollapse.Text = targetText
+end)
+
+local closeCallback = Instance.new("BindableFunction")
+closeCallback.OnInvoke = function(response)
+    if response == "Yes" then gui:Destroy() elseif response == "No" then StarterGui:SetCore("SendNotification", {Title = "Etherion", Text = "Close cancelled", Duration = 3, Icon = "rbxassetid://88238113232908"}) end
+end
+
+closeButton.MouseButton1Click:Connect(function()
+    StarterGui:SetCore("SendNotification", {Title = "Etherion UI", Text = "Are you sure you want to close?", Duration = 10, Icon = "rbxassetid://88238113232908", Button1 = "Yes", Button2 = "No", Callback = closeCallback})
+end)
+
+StarterGui:SetCore("SendNotification", {Title = "Etherion", Text = "Etherion Loaded", Duration = 6, Icon = "rbxassetid://88238113232908"})
