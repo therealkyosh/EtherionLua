@@ -1,0 +1,160 @@
+--// GAME CHECK
+if game.PlaceId ~= 109533024287077 then
+	game.Players.LocalPlayer:Kick("Wrong Game")
+	return
+end
+
+local Players = game:GetService("Players")
+local VirtualUser = game:GetService("VirtualUser")
+local StarterGui = game:GetService("StarterGui")
+
+local player = Players.LocalPlayer
+local playerGui = player:WaitForChild("PlayerGui")
+
+--// ANTI AFK
+player.Idled:Connect(function()
+	VirtualUser:CaptureController()
+	VirtualUser:ClickButton2(Vector2.new())
+end)
+
+StarterGui:SetCore("SendNotification", {
+	Title = "Checked",
+	Text = "Anti AFK Mode",
+	Duration = 5
+})
+
+--// UI
+local screenGui = Instance.new("ScreenGui")
+screenGui.Name = "EtherionUI"
+screenGui.ResetOnSpawn = false
+screenGui.Parent = playerGui
+
+local main = Instance.new("Frame")
+main.Size = UDim2.new(0, 363, 0, 218)
+main.Position = UDim2.new(0.5, -181, 0.5, -109)
+main.BackgroundColor3 = Color3.fromRGB(15, 15, 15)
+main.BackgroundTransparency = 0.4
+main.Parent = main and screenGui
+
+local corner = Instance.new("UICorner")
+corner.CornerRadius = UDim.new(0, 16)
+corner.Parent = main
+
+local stroke = Instance.new("UIStroke")
+stroke.Color = Color3.fromRGB(255, 100, 100)
+stroke.Thickness = 2
+stroke.Parent = main
+
+local title = Instance.new("TextLabel")
+title.Size = UDim2.new(1, 0, 0, 30)
+title.BackgroundTransparency = 1
+title.Text = "Etherion Standalone"
+title.TextColor3 = Color3.fromRGB(255, 255, 255)
+title.TextScaled = true
+title.Font = Enum.Font.SourceSansSemibold
+title.Parent = main
+
+local logo = Instance.new("ImageLabel")
+logo.Size = UDim2.new(0, 120, 0, 120)
+logo.Position = UDim2.new(0.5, -60, 0.3, -60)
+logo.BackgroundTransparency = 1
+logo.Image = "rbxassetid://88238113232908"
+logo.Parent = main
+
+local fadeTexts = {
+	"Hello " .. player.Name,
+	"Thanks For Using Etherion",
+	"Join Our Discord"
+}
+
+local fadeLabel = Instance.new("TextLabel")
+fadeLabel.Size = UDim2.new(1, -20, 0, 50)
+fadeLabel.Position = UDim2.new(0, 10, 0, 35)
+fadeLabel.BackgroundTransparency = 1
+fadeLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+fadeLabel.Font = Enum.Font.SourceSansSemibold
+fadeLabel.TextSize = 25
+fadeLabel.TextWrapped = true
+fadeLabel.TextTransparency = 1
+fadeLabel.Parent = main
+
+task.spawn(function()
+	while true do
+		for _, txt in ipairs(fadeTexts) do
+			fadeLabel.Text = txt
+			for i = 1, 0, -0.05 do
+				fadeLabel.TextTransparency = i
+				task.wait(0.025)
+			end
+			task.wait(1.5)
+			for i = 0, 1, 0.05 do
+				fadeLabel.TextTransparency = i
+				task.wait(0.025)
+			end
+		end
+	end
+end)
+
+local leftFrame = Instance.new("Frame")
+leftFrame.Size = UDim2.new(0, 140, 0, 85)
+leftFrame.Position = UDim2.new(0, 20, 1, -95)
+leftFrame.BackgroundTransparency = 1
+leftFrame.Parent = main
+
+local leftText = Instance.new("TextLabel")
+leftText.Size = UDim2.new(1, 0, 0.5, 0)
+leftText.BackgroundTransparency = 1
+leftText.Text = "Our Links"
+leftText.TextColor3 = Color3.fromRGB(255, 255, 255)
+leftText.Font = Enum.Font.SourceSansSemibold
+leftText.TextSize = 16
+leftText.Parent = leftFrame
+
+local leftButton = Instance.new("ImageButton")
+leftButton.Size = UDim2.new(0, 35, 0, 35)
+leftButton.Position = UDim2.new(0.5, -17, 0.5, 0)
+leftButton.BackgroundTransparency = 1
+leftButton.Image = "rbxassetid://115249452401470"
+leftButton.Parent = leftFrame
+
+leftButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard("https://discord.gg/znnJwS8Fsq")
+		StarterGui:SetCore("SendNotification", {
+			Title = "Etherion",
+			Text = "Successfully Copied Discord Link",
+			Duration = 5,
+			Icon = "rbxassetid://88238113232908"
+		})
+	end
+end)
+
+local rightButton = Instance.new("TextButton")
+rightButton.Size = UDim2.new(0, 160, 0, 50)
+rightButton.Position = UDim2.new(1, -180, 1, -95)
+rightButton.BackgroundTransparency = 1
+rightButton.BorderSizePixel = 0
+rightButton.Text = "Click Me To Donate To Etherion Dev Team"
+rightButton.TextColor3 = Color3.fromRGB(255, 255, 255)
+rightButton.TextScaled = true
+rightButton.Font = Enum.Font.SourceSansSemibold
+rightButton.Parent = main
+
+rightButton.MouseButton1Click:Connect(function()
+	if setclipboard then
+		setclipboard("https://www.roblox.com/game-pass/1724250791")
+		StarterGui:SetCore("SendNotification", {
+			Title = "Etherion",
+			Text = "Successfully Copied Donate Link",
+			Duration = 5,
+			Icon = "rbxassetid://88238113232908"
+		})
+	end
+end)
+
+--// DESTROY UI AFTER 9s THEN EXECUTE AFTER 2s
+task.delay(9, function()
+	screenGui:Destroy()
+	task.wait(2)
+	loadstring(game:HttpGet("https://raw.githubusercontent.com/therealkyosh/EtherionLua/refs/heads/main/Lua%2B1ESFB"))()
+end)
